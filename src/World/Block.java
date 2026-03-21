@@ -24,6 +24,8 @@ public class Block {
     public void draw(Graphics g){
         g.setColor(color);
         g.fillRect(x, y, size, size);
+
+//        block border creating, comment next 2 lines to see complete non-bordered world
         g.setColor(Color.BLACK);
         g.drawRect(x, y, size, size);
     }
