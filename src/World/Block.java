@@ -26,7 +26,7 @@ public class Block {
         g.fillRect(x, y, size, size);
 
 //        block border creating, comment next 2 lines to see complete non-bordered world
-        g.setColor(Color.BLACK);
-        g.drawRect(x, y, size, size);
+//        g.setColor(Color.BLACK);
+//        g.drawRect(x, y, size, size);
     }
 }

@@ -8,11 +8,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
-public class GamePanel extends JPanel implements ActionListener {
+public class GamePanel extends JPanel implements ActionListener, MouseMotionListener {
     private Hero hero;
     private GameMap map;
     private Timer timer;
+    private Block hoveredBlock = null;
 
     public GamePanel(Hero hero){
         this.hero = hero;
@@ -20,6 +23,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
         timer = new Timer(16, this);
         timer.start();
+
+        this.addMouseMotionListener(this);
     }
 
     @Override
@@ -29,6 +34,15 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setBackground(new Color(135, 206, 235));
 
         map.draw(g);
+
+        if(hoveredBlock != null) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(new BasicStroke(2));
+            Rectangle bounds = hoveredBlock.getBounds();
+            g2d.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            g2d.dispose();
+        }
 
         Image img = hero.getImg();
         if(img != null) {
@@ -43,6 +57,26 @@ public class GamePanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         applyGravityAndCollision();
         repaint();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e){
+        updateHoveredBlock(e.getPoint());
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e){
+        updateHoveredBlock(e.getPoint());
+    }
+
+    private void updateHoveredBlock(Point mousePos){
+        hoveredBlock = null;
+        for(Block block : map.getBlocks()){
+            if(block.getBounds().contains(mousePos)){
+                hoveredBlock = block;
+                break;
+            }
+        }
     }
 
     private void applyGravityAndCollision() {
