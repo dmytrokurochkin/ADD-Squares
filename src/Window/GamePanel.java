@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.MouseMotionListener;
 
 public class GamePanel extends JPanel implements ActionListener, MouseMotionListener {
@@ -17,6 +19,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private Timer timer;
     private Block hoveredBlock = null;
     //movement
+    public static int mvSpeed = 5;
     public static int gravitySpeed = 5;
     private boolean leftPres = false;
     private boolean rightPres = false;
@@ -26,10 +29,30 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         this.hero = hero;
         this.map = new GameMap();
 
+        this.addMouseMotionListener(this);
+
+        setFocusable(true);
+        requestFocusInWindow();
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_W) up = true;
+//                if (e.getKeyCode() == KeyEvent.VK_S) down = true;
+                if (e.getKeyCode() == KeyEvent.VK_A) leftPres = true;
+                if (e.getKeyCode() == KeyEvent.VK_D) rightPres = true;
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+//                if (e.getKeyCode() == KeyEvent.VK_W) up = false;
+//                if (e.getKeyCode() == KeyEvent.VK_S) down = false;
+                if (e.getKeyCode() == KeyEvent.VK_A) leftPres = false;
+                if (e.getKeyCode() == KeyEvent.VK_D) rightPres = false;
+            }
+        });
+
         timer = new Timer(16, this);
         timer.start();
-
-        this.addMouseMotionListener(this);
     }
 
     @Override
@@ -58,8 +81,10 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         }
     }
 
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        move();
         applyGravity();
         repaint();
     }
@@ -94,6 +119,12 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         }
 
         return false;
+    }
+
+    private void move() {
+            if (leftPres) hero.setX(hero.getX() - mvSpeed);
+            if (rightPres) hero.setX(hero.getX() + mvSpeed);
+
     }
 
     private void applyGravity() {
