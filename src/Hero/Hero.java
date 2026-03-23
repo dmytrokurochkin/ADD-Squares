@@ -8,7 +8,7 @@ import java.awt.*;
 public class Hero {
     int x, y, hp, damage;
     private int width = 36, height = 36;
-    Image img = new ImageIcon("C:\\Users\\Kira\\Documents\\ADD-Squares\\src\\bulbasaur.png").getImage() ;
+    Image img = new ImageIcon("src/bulbasaur.png").getImage() ;
     public Hero(int x, int y, int hp, int damage) {
         this.x = x;
         this.y = y;
