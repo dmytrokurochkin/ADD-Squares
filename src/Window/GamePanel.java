@@ -16,6 +16,11 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private GameMap map;
     private Timer timer;
     private Block hoveredBlock = null;
+    //movement
+    public static int gravitySpeed = 5;
+    private boolean leftPres = false;
+    private boolean rightPres = false;
+    private boolean jumpPres = false;
 
     public GamePanel(Hero hero){
         this.hero = hero;
@@ -55,7 +60,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        applyGravityAndCollision();
+        applyGravity();
         repaint();
     }
 
@@ -79,23 +84,30 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         }
     }
 
-    private void applyGravityAndCollision() {
-        int gravitySpeed = 5;
-
+    private boolean isGrounded() {
         Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
-
-        boolean isGrounded = false;
 
         for (Block block : map.getBlocks()) {
             if (nextPosition.intersects(block.getBounds())) {
-                isGrounded = true;
-                hero.setRawY(block.GetY() - hero.getHeight());
-                break;
+                return true;
             }
         }
 
-        if (!isGrounded) {
+        return false;
+    }
+
+    private void applyGravity() {
+        if (!isGrounded()) {
             hero.setRawY(hero.getY() + gravitySpeed);
+            return;
+        }
+
+        Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
+        for (Block block : map.getBlocks()) {
+            if (nextPosition.intersects(block.getBounds())) {
+                hero.setRawY(block.GetY() - hero.getHeight());
+                return;
+            }
         }
     }
 }

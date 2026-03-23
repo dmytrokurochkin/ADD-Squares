@@ -42,11 +42,11 @@ public class Hero {
         this.y = y;
     }
 
-//    public void setY(int y) {
-//        this.y = y % MyWindow.getWindowWidth();
-//        if(this.y < 0)
-//            this.y = MyWindow.getWindowWidth() + this.y;
-//    }
+    public void setY(int y) {
+        this.y = y % MyWindow.getWindowWidth();
+        if(this.y < 0)
+            this.y = MyWindow.getWindowWidth() + this.y;
+    }
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
