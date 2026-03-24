@@ -24,6 +24,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private boolean leftPres = false;
     private boolean rightPres = false;
     private boolean jumpPres = false;
+    private boolean jumpInProgress = false;
 
     public GamePanel(Hero hero){
         this.hero = hero;
@@ -36,16 +37,14 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_W) up = true;
-//                if (e.getKeyCode() == KeyEvent.VK_S) down = true;
+                if (e.getKeyCode() == KeyEvent.VK_W) jumpPres = true;
                 if (e.getKeyCode() == KeyEvent.VK_A) leftPres = true;
                 if (e.getKeyCode() == KeyEvent.VK_D) rightPres = true;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_W) up = false;
-//                if (e.getKeyCode() == KeyEvent.VK_S) down = false;
+                if (e.getKeyCode() == KeyEvent.VK_W) jumpPres = false;
                 if (e.getKeyCode() == KeyEvent.VK_A) leftPres = false;
                 if (e.getKeyCode() == KeyEvent.VK_D) rightPres = false;
             }
@@ -124,7 +123,22 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private void move() {
             if (leftPres) hero.setX(hero.getX() - mvSpeed);
             if (rightPres) hero.setX(hero.getX() + mvSpeed);
+            if (jumpPres) jump();
 
+    }
+
+    private void jump() {
+        if (jumpInProgress || !isGrounded()) return;
+
+        jumpInProgress = true;
+        gravitySpeed = -gravitySpeed;
+
+        Timer jumpTimer = new Timer(500, e -> {
+            gravitySpeed = -gravitySpeed;
+            jumpInProgress = false;
+        });
+        jumpTimer.setRepeats(false);
+        jumpTimer.start();
     }
 
     private void applyGravity() {
