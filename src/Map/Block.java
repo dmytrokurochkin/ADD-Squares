@@ -13,11 +13,19 @@ public enum Block {
     WOOD(new Color(101, 67, 33), true),
     LEAFS(new Color(34, 139, 34), false);
 
-    public final Color blockColor;
-    public final boolean isSolid;
+    private final Color blockColor;
+    private final boolean solid;
 
-    Block(Color blockColor, boolean isSolid) {
+    Block(Color blockColor, boolean solid) {
         this.blockColor = blockColor;
-        this.isSolid = isSolid;
+        this.solid = solid;
+    }
+
+    public Color getBlockColor() {
+        return blockColor;
+    }
+
+    public boolean isSolid() {
+        return solid;
     }
 }

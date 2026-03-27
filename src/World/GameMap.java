@@ -1,7 +1,7 @@
 package World;
 
 import Window.MyWindow;
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.ArrayList;
 
 public class GameMap {
@@ -28,11 +28,11 @@ public class GameMap {
                 if (row < 8) {
                     continue;
                 } else if (row == 8) {
-                    blocks.add(new Block(x, y, BLOCK_SIZE, Color.GREEN));
+                    blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.GRASS));
                 } else if (row == 9 || row == 10) {
-                    blocks.add(new Block(x, y, BLOCK_SIZE, new Color(139, 69, 19)));
+                    blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.DIRT));
                 } else {
-                    blocks.add(new Block(x, y, BLOCK_SIZE, Color.GRAY));
+                    blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.STONE));
                 }
             }
 
