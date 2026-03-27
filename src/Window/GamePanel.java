@@ -20,7 +20,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private Block hoveredBlock = null;
     //movement
     public static int mvSpeed = 5;
-    public static int gravitySpeed = 5;
+    public static int gravitySpeed = 7;
     private boolean leftPres = false;
     private boolean rightPres = false;
     private boolean jumpPres = false;
@@ -132,11 +132,13 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private void jump() {
         if (jumpInProgress || !isGrounded()) return;
 
-        jumpInProgress = true;
-        gravitySpeed = -gravitySpeed;
+        int jumpSpeedAcc = 3;
 
-        Timer jumpTimer = new Timer(500, e -> {
-            gravitySpeed = -gravitySpeed;
+        jumpInProgress = true;
+        gravitySpeed = -gravitySpeed - jumpSpeedAcc;
+
+        Timer jumpTimer = new Timer(250, e -> {
+            gravitySpeed = -gravitySpeed - jumpSpeedAcc;
             jumpInProgress = false;
         });
         jumpTimer.setRepeats(false);
