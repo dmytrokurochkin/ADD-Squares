@@ -78,6 +78,8 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
             g.setColor(Color.RED);
             g.fillRect(hero.getX(), hero.getY(), hero.getWidth(), hero.getHeight());
         }
+
+        Toolkit.getDefaultToolkit().sync();
     }
 
 
