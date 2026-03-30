@@ -1,11 +1,13 @@
 package World;
 
 import Window.MyWindow;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
 public class GameMap {
-    private ArrayList<Block> blocks;
+    private final ArrayList<Block> blocks;
     public static final int BLOCK_SIZE = 40;
 
     public GameMap() {
@@ -39,16 +41,50 @@ public class GameMap {
             }
         }
 
-        public ArrayList<Block> getBlocks() {
-            return blocks;
-        }
-
-        public void draw(Graphics g){
-            for(Block block : blocks){
-                block.draw(g);
-            }
-        }
+    public ArrayList<Block> getBlocks() {
+        return blocks;
     }
 
+    public Block getBlockAt(Point point) {
+        for (Block block : blocks) {
+            if (block.getBounds().contains(point)) {
+                return block;
+            }
+        }
 
+        return null;
+    }
+
+    public boolean removeBlock(Block block) {
+        return blocks.remove(block);
+    }
+
+    public boolean placeBlock(int pixelX, int pixelY, Map.Block type, Rectangle forbiddenArea) {
+        int snappedX = (pixelX / BLOCK_SIZE) * BLOCK_SIZE;
+        int snappedY = (pixelY / BLOCK_SIZE) * BLOCK_SIZE;
+
+        if (snappedX < 0 || snappedY < 0) return false;
+        if (snappedX >= MyWindow.getWindowWidth() || snappedY >= MyWindow.getWindowHeight()) return false;
+
+        Rectangle newBlockBounds = new Rectangle(snappedX, snappedY, BLOCK_SIZE, BLOCK_SIZE);
+        if (forbiddenArea != null && newBlockBounds.intersects(forbiddenArea)) {
+            return false;
+        }
+
+        for (Block block : blocks) {
+            if (block.getBounds().intersects(newBlockBounds)) {
+                return false;
+            }
+        }
+
+        blocks.add(new Block(snappedX, snappedY, BLOCK_SIZE, type));
+        return true;
+    }
+
+    public void draw(Graphics g){
+        for(Block block : blocks){
+            block.draw(g);
+        }
+    }
+}
 

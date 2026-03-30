@@ -11,9 +11,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-public class GamePanel extends JPanel implements ActionListener, MouseMotionListener {
+public class GamePanel extends JPanel implements ActionListener, MouseMotionListener, MouseListener {
     private Hero hero;
     private GameMap map;
     private Timer timer;
@@ -31,6 +32,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         this.map = new GameMap();
 
         this.addMouseMotionListener(this);
+        this.addMouseListener(this);
 
         setFocusable(true);
         requestFocusInWindow();
@@ -100,21 +102,47 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         updateHoveredBlock(e.getPoint());
     }
 
-    private void updateHoveredBlock(Point mousePos){
-        hoveredBlock = null;
-        for(Block block : map.getBlocks()){
-            if(block.getBounds().contains(mousePos)){
-                hoveredBlock = block;
-                break;
-            }
+    @Override
+    public void mousePressed(MouseEvent e) {
+        requestFocusInWindow();
+
+        if (SwingUtilities.isLeftMouseButton(e) && hoveredBlock != null) {
+            map.removeBlock(hoveredBlock);
         }
+
+        if (SwingUtilities.isRightMouseButton(e)) {
+            map.placeBlock(e.getX(), e.getY(), Map.Block.DIRT, hero.getBounds());
+        }
+
+        updateHoveredBlock(e.getPoint());
+        repaint();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    private void updateHoveredBlock(Point mousePos){
+        hoveredBlock = map.getBlockAt(mousePos);
     }
 
     private boolean isGrounded() {
         Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
 
         for (Block block : map.getBlocks()) {
-            if (nextPosition.intersects(block.getBounds())) {
+            if (block.isSolid() && nextPosition.intersects(block.getBounds())) {
                 return true;
             }
         }
@@ -153,11 +181,10 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
 
         Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
         for (Block block : map.getBlocks()) {
-            if (nextPosition.intersects(block.getBounds())) {
+            if (block.isSolid() && nextPosition.intersects(block.getBounds())) {
                 hero.setRawY(block.GetY() - hero.getHeight());
                 return;
             }
         }
     }
 }
-
