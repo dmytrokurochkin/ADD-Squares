@@ -15,17 +15,20 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 public class GamePanel extends JPanel implements ActionListener, MouseMotionListener, MouseListener {
-    private Hero hero;
-    private GameMap map;
-    private Timer timer;
+    private static final int MOVE_SPEED = 4;
+    private static final double GRAVITY = 0.8;
+    private static final double JUMP_VELOCITY = -12.0;
+    private static final double MAX_FALL_SPEED = 14.0;
+
+    private final Hero hero;
+    private final GameMap map;
+    private final Timer timer;
     private Block hoveredBlock = null;
-    //movement
-    public static int mvSpeed = 5;
-    public static int gravitySpeed = 7;
+    private Map.Block selectedBlock = Map.Block.DIRT;
     private boolean leftPres = false;
     private boolean rightPres = false;
-    private boolean jumpPres = false;
-    private boolean jumpInProgress = false;
+    private boolean jumpQueued = false;
+    private double verticalVelocity = 0;
 
     public GamePanel(Hero hero){
         this.hero = hero;
@@ -39,14 +42,17 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_W) jumpPres = true;
+                if (e.getKeyCode() == KeyEvent.VK_W) jumpQueued = true;
                 if (e.getKeyCode() == KeyEvent.VK_A) leftPres = true;
                 if (e.getKeyCode() == KeyEvent.VK_D) rightPres = true;
+                if (e.getKeyCode() == KeyEvent.VK_1) selectedBlock = Map.Block.DIRT;
+                if (e.getKeyCode() == KeyEvent.VK_2) selectedBlock = Map.Block.STONE;
+                if (e.getKeyCode() == KeyEvent.VK_3) selectedBlock = Map.Block.WOOD;
+                if (e.getKeyCode() == KeyEvent.VK_4) selectedBlock = Map.Block.LEAFS;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_W) jumpPres = false;
                 if (e.getKeyCode() == KeyEvent.VK_A) leftPres = false;
                 if (e.getKeyCode() == KeyEvent.VK_D) rightPres = false;
             }
@@ -81,6 +87,11 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
             g.fillRect(hero.getX(), hero.getY(), hero.getWidth(), hero.getHeight());
         }
 
+        g.setColor(new Color(0, 0, 0, 170));
+        g.fillRoundRect(10, 10, 240, 30, 10, 10);
+        g.setColor(Color.WHITE);
+        g.drawString("Selected: " + selectedBlock.name() + "  [1-4]", 20, 30);
+
         Toolkit.getDefaultToolkit().sync();
     }
 
@@ -111,7 +122,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         }
 
         if (SwingUtilities.isRightMouseButton(e)) {
-            map.placeBlock(e.getX(), e.getY(), Map.Block.DIRT, hero.getBounds());
+            map.placeBlock(e.getX(), e.getY(), selectedBlock, hero.getBounds());
         }
 
         updateHoveredBlock(e.getPoint());
@@ -139,10 +150,10 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     }
 
     private boolean isGrounded() {
-        Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
+        Rectangle feetBounds = new Rectangle(hero.getX(), hero.getY() + 1, hero.getWidth(), hero.getHeight());
 
         for (Block block : map.getBlocks()) {
-            if (block.isSolid() && nextPosition.intersects(block.getBounds())) {
+            if (block.isSolid() && feetBounds.intersects(block.getBounds())) {
                 return true;
             }
         }
@@ -151,40 +162,86 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     }
 
     private void move() {
-            if (leftPres) hero.setX(hero.getX() - mvSpeed);
-            if (rightPres) hero.setX(hero.getX() + mvSpeed);
-            if (jumpPres) jump();
+        int deltaX = 0;
+        if (leftPres) deltaX -= MOVE_SPEED;
+        if (rightPres) deltaX += MOVE_SPEED;
 
+        if (deltaX != 0) {
+            moveHorizontal(deltaX);
+        }
+
+        if (jumpQueued) {
+            jump();
+            jumpQueued = false;
+        }
     }
 
     private void jump() {
-        if (jumpInProgress || !isGrounded()) return;
-
-        int jumpSpeedAcc = 3;
-
-        jumpInProgress = true;
-        gravitySpeed = -gravitySpeed - jumpSpeedAcc;
-
-        Timer jumpTimer = new Timer(250, e -> {
-            gravitySpeed = -gravitySpeed - jumpSpeedAcc;
-            jumpInProgress = false;
-        });
-        jumpTimer.setRepeats(false);
-        jumpTimer.start();
+        if (!isGrounded()) return;
+        verticalVelocity = JUMP_VELOCITY;
     }
 
     private void applyGravity() {
-        if (!isGrounded()) {
-            hero.setRawY(hero.getY() + gravitySpeed);
-            return;
-        }
+        verticalVelocity = Math.min(verticalVelocity + GRAVITY, MAX_FALL_SPEED);
+        moveVertical((int) Math.round(verticalVelocity));
+    }
 
-        Rectangle nextPosition = new Rectangle(hero.getX(), hero.getY() + gravitySpeed, hero.getWidth(), hero.getHeight());
-        for (Block block : map.getBlocks()) {
-            if (block.isSolid() && nextPosition.intersects(block.getBounds())) {
-                hero.setRawY(block.GetY() - hero.getHeight());
+    private void moveHorizontal(int deltaX) {
+        int direction = Integer.signum(deltaX);
+
+        for (int moved = 0; moved < Math.abs(deltaX); moved++) {
+            Rectangle nextBounds = new Rectangle(
+                    hero.getX() + direction,
+                    hero.getY(),
+                    hero.getWidth(),
+                    hero.getHeight()
+            );
+
+            Block collidingBlock = getCollidingSolidBlock(nextBounds);
+            if (collidingBlock != null) {
                 return;
             }
+
+            hero.setX(hero.getX() + direction);
         }
+    }
+
+    private void moveVertical(int deltaY) {
+        if (deltaY == 0) return;
+
+        int direction = Integer.signum(deltaY);
+
+        for (int moved = 0; moved < Math.abs(deltaY); moved++) {
+            Rectangle nextBounds = new Rectangle(
+                    hero.getX(),
+                    hero.getY() + direction,
+                    hero.getWidth(),
+                    hero.getHeight()
+            );
+
+            Block collidingBlock = getCollidingSolidBlock(nextBounds);
+            if (collidingBlock != null) {
+                if (direction > 0) {
+                    hero.setRawY(collidingBlock.GetY() - hero.getHeight());
+                } else {
+                    Rectangle blockBounds = collidingBlock.getBounds();
+                    hero.setRawY(blockBounds.y + blockBounds.height);
+                }
+                verticalVelocity = 0;
+                return;
+            }
+
+            hero.setRawY(hero.getY() + direction);
+        }
+    }
+
+    private Block getCollidingSolidBlock(Rectangle bounds) {
+        for (Block block : map.getBlocks()) {
+            if (block.isSolid() && bounds.intersects(block.getBounds())) {
+                return block;
+            }
+        }
+
+        return null;
     }
 }
