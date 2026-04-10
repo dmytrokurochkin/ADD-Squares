@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class MyWindow extends JFrame {
 
-    private static int windowWidth = 800, windowHeight = 600;
+    private static int windowWidth = 1920, windowHeight = 1200;
 
     public static int getWindowWidth() {
         return windowWidth;
@@ -21,7 +21,7 @@ public class MyWindow extends JFrame {
         this.setTitle("ADD-Squares");
         this.setSize(w, h);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
+        //this.setResizable(false);
         this.setLocationRelativeTo(null);
 
         this.add(gamePanel);

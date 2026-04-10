@@ -27,11 +27,11 @@ public class GameMap {
                 int x = col * BLOCK_SIZE;
                 int y = row * BLOCK_SIZE;
 
-                if (row < 8) {
+                if (row < 12) {
                     continue;
-                } else if (row == 8) {
+                } else if (row == 12) {
                     blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.GRASS));
-                } else if (row == 9 || row == 10) {
+                } else if (row == 13 || row == 14) {
                     blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.DIRT));
                 } else {
                     blocks.add(new Block(x, y, BLOCK_SIZE, Map.Block.STONE));
