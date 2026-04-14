@@ -1,11 +1,15 @@
 package Window;
 
+import Hero.Entity;
+import Hero.Enemy;
 import Hero.Hero;
 import World.Block;
 import World.GameMap;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -21,6 +25,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private static final double MAX_FALL_SPEED = 14.0;
 
     private final Hero hero;
+    private final List<Entity> entities;
     private final GameMap map;
     private final Timer timer;
     private Block hoveredBlock = null;
@@ -30,9 +35,15 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     private boolean jumpQueued = false;
     private double verticalVelocity = 0;
 
-    public GamePanel(Hero hero){
+    public GamePanel(Hero hero) {
         this.hero = hero;
         this.map = new GameMap();
+        this.entities = new ArrayList<>();
+
+        entities.add(hero);
+        // Adding polymorphic enemies to demonstrate the requirement
+        entities.add(new Enemy(200, 440));
+        entities.add(new Enemy(600, 440));
 
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
@@ -42,19 +53,28 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_W) jumpQueued = true;
-                if (e.getKeyCode() == KeyEvent.VK_A) leftPres = true;
-                if (e.getKeyCode() == KeyEvent.VK_D) rightPres = true;
-                if (e.getKeyCode() == KeyEvent.VK_1) selectedBlock = Map.Block.DIRT;
-                if (e.getKeyCode() == KeyEvent.VK_2) selectedBlock = Map.Block.STONE;
-                if (e.getKeyCode() == KeyEvent.VK_3) selectedBlock = Map.Block.WOOD;
-                if (e.getKeyCode() == KeyEvent.VK_4) selectedBlock = Map.Block.LEAFS;
+                if (e.getKeyCode() == KeyEvent.VK_W)
+                    jumpQueued = true;
+                if (e.getKeyCode() == KeyEvent.VK_A)
+                    leftPres = true;
+                if (e.getKeyCode() == KeyEvent.VK_D)
+                    rightPres = true;
+                if (e.getKeyCode() == KeyEvent.VK_1)
+                    selectedBlock = Map.Block.DIRT;
+                if (e.getKeyCode() == KeyEvent.VK_2)
+                    selectedBlock = Map.Block.STONE;
+                if (e.getKeyCode() == KeyEvent.VK_3)
+                    selectedBlock = Map.Block.WOOD;
+                if (e.getKeyCode() == KeyEvent.VK_4)
+                    selectedBlock = Map.Block.LEAFS;
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_A) leftPres = false;
-                if (e.getKeyCode() == KeyEvent.VK_D) rightPres = false;
+                if (e.getKeyCode() == KeyEvent.VK_A)
+                    leftPres = false;
+                if (e.getKeyCode() == KeyEvent.VK_D)
+                    rightPres = false;
             }
         });
 
@@ -70,7 +90,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
 
         map.draw(g);
 
-        if(hoveredBlock != null) {
+        if (hoveredBlock != null) {
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setColor(Color.BLACK);
             g2d.setStroke(new BasicStroke(2));
@@ -79,12 +99,8 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
             g2d.dispose();
         }
 
-        Image img = hero.getImg();
-        if(img != null) {
-            g.drawImage(img, hero.getX(), hero.getY(), hero.getWidth(), hero.getHeight(), null);
-        } else {
-            g.setColor(Color.RED);
-            g.fillRect(hero.getX(), hero.getY(), hero.getWidth(), hero.getHeight());
+        for (Entity entity : entities) {
+            entity.draw(g);
         }
 
         g.setColor(new Color(0, 0, 0, 170));
@@ -95,7 +111,6 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
         Toolkit.getDefaultToolkit().sync();
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
         move();
@@ -104,12 +119,12 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     }
 
     @Override
-    public void mouseMoved(MouseEvent e){
+    public void mouseMoved(MouseEvent e) {
         updateHoveredBlock(e.getPoint());
     }
 
     @Override
-    public void mouseDragged(MouseEvent e){
+    public void mouseDragged(MouseEvent e) {
         updateHoveredBlock(e.getPoint());
     }
 
@@ -145,7 +160,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     public void mouseExited(MouseEvent e) {
     }
 
-    private void updateHoveredBlock(Point mousePos){
+    private void updateHoveredBlock(Point mousePos) {
         hoveredBlock = map.getBlockAt(mousePos);
     }
 
@@ -163,8 +178,10 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
 
     private void move() {
         int deltaX = 0;
-        if (leftPres) deltaX -= MOVE_SPEED;
-        if (rightPres) deltaX += MOVE_SPEED;
+        if (leftPres)
+            deltaX -= MOVE_SPEED;
+        if (rightPres)
+            deltaX += MOVE_SPEED;
 
         if (deltaX != 0) {
             moveHorizontal(deltaX);
@@ -177,7 +194,8 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     }
 
     private void jump() {
-        if (!isGrounded()) return;
+        if (!isGrounded())
+            return;
         verticalVelocity = JUMP_VELOCITY;
     }
 
@@ -194,8 +212,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
                     hero.getX() + direction,
                     hero.getY(),
                     hero.getWidth(),
-                    hero.getHeight()
-            );
+                    hero.getHeight());
 
             Block collidingBlock = getCollidingSolidBlock(nextBounds);
             if (collidingBlock != null) {
@@ -207,7 +224,8 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
     }
 
     private void moveVertical(int deltaY) {
-        if (deltaY == 0) return;
+        if (deltaY == 0)
+            return;
 
         int direction = Integer.signum(deltaY);
 
@@ -216,8 +234,7 @@ public class GamePanel extends JPanel implements ActionListener, MouseMotionList
                     hero.getX(),
                     hero.getY() + direction,
                     hero.getWidth(),
-                    hero.getHeight()
-            );
+                    hero.getHeight());
 
             Block collidingBlock = getCollidingSolidBlock(nextBounds);
             if (collidingBlock != null) {
