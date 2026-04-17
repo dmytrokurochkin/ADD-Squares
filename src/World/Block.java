@@ -5,9 +5,9 @@ import java.awt.Graphics;
 
 public class Block implements Collidable {
     private int x, y, size;
-    private final Map.Block type;
+    private final World.Map.Block type;
 
-    public Block(int x, int y, int size, Map.Block type) {
+    public Block(int x, int y, int size, World.Map.Block type) {
         this.x = x;
         this.y = y;
         this.size = size;
@@ -22,7 +22,7 @@ public class Block implements Collidable {
         return y;
     }
 
-    public Map.Block getType() {
+    public World.Map.Block getType() {
         return type;
     }
 

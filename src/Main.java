@@ -5,7 +5,7 @@ import Window.MyWindow;
 public class Main {
     public static void main(String[] args) {
         Hero bulbasaur = new Hero(10, 10, 100, 10);
-        GamePanel Panel = new GamePanel(bulbasaur);
-        new MyWindow(MyWindow.getWindowWidth(), MyWindow.getWindowHeight(), Panel);
+        GamePanel gamePanel = new GamePanel(bulbasaur);
+        new MyWindow(gamePanel);
     }
 }

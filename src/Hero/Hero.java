@@ -1,6 +1,5 @@
 package Hero;
 
-import Window.MyWindow;
 import javax.swing.*;
 import java.awt.*;
 
@@ -17,6 +16,12 @@ public class Hero extends Entity {
     public Hero(int x, int y, int hp, int damage) {
         super(x, y, hp);
         this.damage = damage;
+        initSize();
+    }
+
+    public Hero(int x, int y) {
+        super(x, y, 100);
+        this.damage = 10;
         initSize();
     }
 
@@ -43,9 +48,7 @@ public class Hero extends Entity {
 
     @Override
     public void setX(int x) {
-        this.x = x % MyWindow.getWindowWidth();
-        if (this.x < 0)
-            this.x = MyWindow.getWindowWidth() + this.x;
+        this.x = x;
     }
 
     public void setRawY(int y) {
@@ -54,9 +57,7 @@ public class Hero extends Entity {
 
     @Override
     public void setY(int y) {
-        this.y = y % MyWindow.getWindowWidth();
-        if (this.y < 0)
-            this.y = MyWindow.getWindowWidth() + this.y;
+        this.y = y;
     }
 
     @Override
